@@ -6,13 +6,13 @@ Linear polymer model with sliding binding sites.
 
 1. Clone this repository to your local machine.
 
-```bash
+```
 $ git clone https://github.com/JosephWakim/sliding_nucleosome.git
 ```
 
 2. Navigate to the repository on your local machine.
 
-```bash
+```
 $ cd sliding_nucleosome
 ```
 
@@ -24,14 +24,14 @@ with all dependencies. Please note that this will overwrite any existing conda
 environment called `slide`.
 
 
-```bash
+```
 $ bash make.sh
 ```
 
 
 4. Activate the `slide` conda environment.
 
-```bash
+```
 $ conda activate slide
 ```
 
