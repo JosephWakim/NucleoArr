@@ -18,14 +18,14 @@ class NucleosomeArray:
         """Initialize NucleosomeArray object.
         """
         # Store physical parameters
-        self.J = J
-        self.B = B
-        self.mu = mu
-        self.linker_lengths = linker_lengths
+        self.J = np.atleast_2d(J)
+        self.B = np.atleast_2d(B)
+        self.mu = np.array(mu)
+        self.linker_lengths = np.array(linker_lengths)
         self.a = a
-        self.gamma = (linker_lengths <= a)
-        self.marks = marks
-        self.Nbi = Nbi
+        self.gamma = (linker_lengths <= a).astype(int)
+        self.marks = np.atleast_2d(marks)
+        self.Nbi = np.array(Nbi)
         self.lam = lam
 
         # Define unchanging physical parameters

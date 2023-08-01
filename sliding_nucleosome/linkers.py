@@ -6,7 +6,7 @@ Date:       31 July 2023
 """
 
 import numpy as np
-import sliding_nucleosomes.nucleo_arr as nuc
+import sliding_nucleosome.nucleo_arr as nuc
 
 
 def compute_matrix_product(T_all: np.ndarray):
@@ -95,4 +95,4 @@ def sample_new_linker_length(nuc_arr, new_gamma) -> float:
     if new_gamma == 1:
         return nuc_arr.a + np.random.geometric(nuc_arr.p)
     else:
-        return np.random.choice(nuc_arr.l_arr, p=nuc_arr.p_lt)
+        return np.random.choice(nuc_arr.l_array, p=nuc_arr.p_lt)
