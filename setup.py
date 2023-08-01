@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import numpy as np
 
 # Package metadata
 NAME = 'sliding_nucleosome'
@@ -39,6 +40,8 @@ setup(
     url=URL,
     keywords=KEYWORDS,
     classifiers=CLASSIFIERS,
-    packages=find_packages(),
+    packages=find_packages(include=["sliding_nucleosome"]),
+    include_package_data=True,
+    include_dirs=[np.get_include(), "sliding_nucleosome"],
     install_requires=INSTALL_REQUIRES,
 )
