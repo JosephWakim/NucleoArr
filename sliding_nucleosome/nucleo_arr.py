@@ -135,3 +135,53 @@ class NucleosomeArray:
         self.T_all = np.zeros((self.Nr, self.Nr, self.n_beads))
         for ind in range(len(self.marks)):
             self.T_all[:, :, ind] = self.get_transfer_matrix(ind)
+
+
+def gen_meth(n_n, f_m, l_m=0):
+    """Generate a methylation profile with defined mean and correlation.
+
+    Notes
+    -----
+    Function by Dr. Andrew Spakowitz.
+    TODO: Talk to Andy about this.
+
+    Parameters
+    ----------
+    n_n : int
+        Number of nucleosomes
+    f_m : float
+        Probability that a tail is methylated
+    l_m : float
+        Correlation length of methylation
+
+    Returns
+    -------
+    n_m : np.ndarray of int
+        Number of methylated tails for each nucleosome
+    """
+    # Compute methylation probabilities
+    if l_m == 0:
+        lam = 0.
+    else:
+        lam = np.exp(-1 / l_m)
+    f_u = 1 - f_m
+    p_mm = lam * f_u + f_m  # P(methylated | methylated at previous site)
+    p_uu = lam * f_m + f_u  # P(unmethylated | unmethylated at previous site)
+    prob_tot = [(1 - f_m) ** 2, 2 * f_m * (1 - f_m), f_m ** 2]
+    prob_m = [2 * (1 - f_m) / (2 - f_m), f_m / (2 - f_m)]
+
+    # Generate the methylation profile
+    n_m = np.zeros(n_n)
+    n_m[0] = np.random.choice([0, 1, 2], 1, p=prob_tot)
+    for i_n in range(1, n_n):
+        if n_m[i_n - 1] == 0:
+            if np.random.uniform(0, 1) < p_uu:
+                n_m[i_n] = 0
+            else:
+                n_m[i_n] = np.random.choice([1, 2], 1, p=prob_m)
+        else:
+            if np.random.uniform(0, 1) < p_mm:
+                n_m[i_n] = np.random.choice([1, 2], 1, p=prob_m)
+            else:
+                n_m[i_n] = 0
+    return n_m
