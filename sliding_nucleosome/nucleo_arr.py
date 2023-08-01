@@ -6,6 +6,7 @@ Date:       31 July 2023
 """
 
 from math import comb
+import json
 import numpy as np
 
 
@@ -13,7 +14,7 @@ class NucleosomeArray:
     """Class representation of nucleosome array and associated reader proteins.
     """
     
-    def __init__(self, J, B, mu, linker_lengths, a, marks, Nbi):
+    def __init__(self, J, B, mu, linker_lengths, a, lam, marks, Nbi):
         """Initialize NucleosomeArray object.
         """
         # Store physical parameters
@@ -25,6 +26,14 @@ class NucleosomeArray:
         self.gamma = (linker_lengths <= a)
         self.marks = marks
         self.Nbi = Nbi
+        self.lam = lam
+
+        # Define unchanging physical parameters
+        self.z = np.exp(-lam * a)
+        self.p = 1 - np.exp(-lam)
+        self.l_array = np.arange(1, a, dtype=int)
+        p_lt = np.exp(-lam * self.l_array)
+        self.p_lt = p_lt / np.sum(p_lt)
 
         # Count and validate the number of beads and marks
         self.n_beads = marks.shape[0]
@@ -42,7 +51,41 @@ class NucleosomeArray:
 
         # Initialize all transfer matrices
         self.get_all_transfer_matrices()
-        self.T_all_temp = self.T_all.copy()
+        self.T_all_1 = self.T_all.copy()
+
+    def save(self, file_path):
+        """Save nucleosome array to file.
+        """
+        # Convert object attributes to a JSON-formatted dictionary
+        nucleosome_array_dict = {
+            "J": self.J.tolist(),
+            "B": self.B.tolist(),
+            "mu": self.mu.tolist(),
+            "linker_lengths": self.linker_lengths.tolist(),
+            "a": self.a,
+            "lam": self.lam,
+            "marks": self.marks.tolist(),
+            "Nbi": self.Nbi.tolist()
+        }
+        # Save dictionary to file
+        with open(file_path, "w") as f:
+            json.dump(nucleosome_array_dict, f)
+
+    @classmethod
+    def load(cls, file_path):
+        """Load nucleosome array from file.
+        """
+        # Load dictionary from file
+        with open(file_path, "r") as f:
+            nucleosome_array_dict = json.load(f)
+
+        # Format the mark pattern as a numpy array
+        nucleosome_array_dict["marks"] = np.array(
+            nucleosome_array_dict["marks"]
+        )
+
+        # Initialize NucleosomeArray object
+        return cls(**nucleosome_array_dict)
 
     def get_transfer_matrix(self, ind, gamma_override=None):
         """Get transfer matrix at an index of the nucleosome array.
