@@ -5,14 +5,12 @@ Group:      Spakowitz Lab
 Date:       31 July 2023
 """
 
-import os
 from math import comb
 import numpy as np
-import pandas as pd
 
 
 class NucleosomeArray:
-    """Class representation of a nucleosome array and associated reader proteins.
+    """Class representation of nucleosome array and associated reader proteins.
     """
     
     def __init__(self, J, B, mu, linker_lengths, a, marks, Nbi):
@@ -31,19 +29,22 @@ class NucleosomeArray:
         # Count and validate the number of beads and marks
         self.n_beads = marks.shape[0]
         self.n_marks = marks.shape[1]
-        assert len(Nbi) == n_marks, "Specify a maximum binder state for each mark"
+        assert len(Nbi) == self.n_marks, \
+            "Specify a maximum binder state for each mark"
 
         # Get all combinations of different binder states
         self.Nr = np.prod(Nbi + 1)
         ranges = [range(Nbi_+1) for Nbi_ in Nbi]
         self.sigma_i1 = np.mgrid[tuple(ranges)]
-        self.sigma_i1 = np.column_stack([combo.ravel() for combo in sigma_i1])
+        self.sigma_i1 = np.column_stack(
+            [combo.ravel() for combo in self.sigma_i1]
+        )
 
         # Initialize all transfer matrices
-        self.T_all = self.get_all_transfer_matrices()
+        self.get_all_transfer_matrices()
         self.T_all_temp = self.T_all.copy()
-        
-    def get_transfer_matrix(self, ind, gamma_override = None):
+
+    def get_transfer_matrix(self, ind, gamma_override=None):
         """Get transfer matrix at an index of the nucleosome array.
         """
         # Initialize transfer matrix and combinations of binder_states
