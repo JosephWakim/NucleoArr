@@ -78,8 +78,8 @@ def get_dF(nuc_arr: nuc.NucleosomeArray, ind: int) -> float:
     trace_1, alphas_1 = compute_partition_function(nuc_arr.T_all_1)
     trace_0, alphas_0 = compute_partition_function(nuc_arr.T_all)
     # Compute the difference in free energy (don't forget to add the alphas)
-    dF = np.log(trace_1) - np.log(trace_0) + \
-        np.sum(np.log(alphas_1)) - np.sum(np.log(alphas_0))
+    dF = -np.log(trace_1) + np.log(trace_0) - \
+        np.sum(np.log(alphas_1)) + np.sum(np.log(alphas_0))
     return dF
 
 
