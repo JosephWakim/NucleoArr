@@ -185,3 +185,7 @@ docs/build*
 # Simulation outputs do not need to be pushed to GitHub.
 output/*
 outputs/*
+
+# sbatch files do not need to be pushed to GitHub.
+sbatch_files/*
+```
