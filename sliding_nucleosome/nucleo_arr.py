@@ -112,10 +112,10 @@ class NucleosomeArray:
         # Calculate the binding energy
         for b, n_binders_ind in enumerate(sigma_ind):
             # Identify the number of associated marks on the site
-            n_marks_ind = self.marks[ind][b]
+            n_marks_ind = int(self.marks[ind][b])
             # Evaluate the single-site partition function
-            i = np.arange(np.min([n_marks_ind, n_binders_ind]) + 1)
-            E += np.log(np.sum(
+            i = np.arange(n_binders_ind + 1)
+            E += -np.log(np.sum(
                 comb(n_marks_ind, i) *
                 comb(self.Nbi[b] - n_marks_ind, n_binders_ind - i) *
                 (np.exp(-i * self.B[b, b]))
@@ -162,21 +162,7 @@ class NucleosomeArray:
                 E += self.get_neighbor_interactions(sigma_i, sigma_ip1, gamma_)
                 # Transfer matrix involves exponential of energy
                 T[row, col] = np.exp(-E)
-                # Multiply by the degeneracy of the state
-                T[row, col] *= self.get_degeneracy(sigma_i, sigma_ip1)
         return T
-
-    def get_degeneracy(self, sigma_i, sigma_ip1):
-        """Get the degeneracy of the binding state.
-        """
-        # Initialize degeneracy
-        degeneracy = 1
-        # Calculate the degeneracy for each of the neighboring sites
-        for i, binder in enumerate(sigma_i):
-            degeneracy *= comb(self.Nbi[i], binder)
-        for i, binder in enumerate(sigma_ip1):
-            degeneracy *= comb(self.Nbi[i], binder)
-        return degeneracy
     
     def get_all_transfer_matrices(self):
         """Get transfer matrices for all adjacent beads.
