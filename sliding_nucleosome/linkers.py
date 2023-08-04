@@ -49,12 +49,16 @@ def linker_move(nuc_arr: nuc.NucleosomeArray, ind: int):
     gamma is selected for the linker, both the T_all_1 and the `T_all` states
     will be updated to reflect the new gamma value.
     """
+    if ind == nuc_arr.n_beads- 1:
+        ind_p1 = 0
+    else:
+        ind_p1 = ind + 1
     # generate the two gamma values
     original_gamma = nuc_arr.gamma[ind]
     nuc_arr.T_all_1[:, :, ind] = \
-        nuc_arr.get_transfer_matrix(ind, gamma_override=1)
+        nuc_arr.get_transfer_matrix(ind, ind_p1, gamma_override=1)
     nuc_arr.T_all[:, :, ind] = \
-        nuc_arr.get_transfer_matrix(ind, gamma_override=0)
+        nuc_arr.get_transfer_matrix(ind, ind_p1, gamma_override=0)
     # compute the difference in free energy
     dF = get_dF(nuc_arr, ind)
     # Calculate the probability of gamma being one

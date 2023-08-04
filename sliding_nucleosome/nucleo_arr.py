@@ -5,7 +5,7 @@ Group:      Spakowitz Lab
 Date:       31 July 2023
 """
 
-from math import comb
+from scipy.special import comb
 import json
 import numpy as np
 
@@ -87,7 +87,61 @@ class NucleosomeArray:
         # Initialize NucleosomeArray object
         return cls(**nucleosome_array_dict)
 
-    def get_transfer_matrix(self, ind, gamma_override=None):
+    def get_binding_energy(self, ind, sigma_ind):
+        """Get the binding energy associated with binder and mark states.
+
+        Notes
+        -----
+        Consider that we are arranging `Nb` binders on `Nn` sites, of which `Nm`
+        are marked. We can have up to `min(Nb, Nm)` binders on marked sites. For
+        each value `i` in range(`min(Nb, Nm)`), there are `comb(Nm, i)` ways to
+        arrange `i` binders on marked sites and `comb(Nn-Nm, Nb-i)` ways to
+        arrange the remaining `Nb-i` binders on unmarked sites. Thus, the total
+        number of ways to arrange `Nb` binders on `Nn` sites, of which `Nm` are
+        marked, is the sum of `comb(Nm, i) * comb(Nn-Nm, Nb-i)` for `i` in
+        range(`min(Nb, Nm)`). This is equivalent to `comb(Nn, Nb)`.
+
+        The energy of each configuration is determined by the number of binders
+        on marked sites, or `i`. If there is an energy `E_b` associated with
+        each binder on a marked site, then the total energy of the configuration
+        is `i * E_b`. Therefore, the site partition function representing
+        binding is given by `sum(comb(Nm, i) * comb(Nn-Nm, Nb-i) * exp(-i * E_b))`
+        for `i` in range(`min(Nb, Nm)`).
+        """
+        E = 0
+        # Calculate the binding energy
+        for b, n_binders_ind in enumerate(sigma_ind):
+            # Identify the number of associated marks on the site
+            n_marks_ind = self.marks[ind][b]
+            # Evaluate the single-site partition function
+            i = np.arange(np.min([n_marks_ind, n_binders_ind]) + 1)
+            E += np.log(np.sum(
+                comb(n_marks_ind, i) *
+                comb(self.Nbi[b] - n_marks_ind, n_binders_ind - i) *
+                (np.exp(-i * self.B[b, b]))
+            ))
+        # Calculate energies from chemical potentials and same-site interactions
+        for i, binder in enumerate(sigma_ind):
+            # Chemical potential
+            E -= self.mu[i] * binder
+            # Same-site interactions between alike binders
+            E += self.J[i, i] * comb(binder, 2)
+        # Same-site interactions between different binders
+        for i, binder_1 in enumerate(sigma_ind[:-1]):
+            for j, binder_2 in enumerate(sigma_ind[i+1:]):
+                E += self.J[i, j+i+1] * binder_1 * binder_2
+        return E
+
+    def get_neighbor_interactions(self, sigma_i, sigma_ip1, gamma):
+        """Get interactions between binders on adjacent sites
+        """
+        E = 0
+        for i, binder_1 in enumerate(sigma_i):
+            for j, binder_2 in enumerate(sigma_ip1):
+                E += self.J[i, j] * binder_1 * binder_2 * gamma
+        return E
+
+    def get_transfer_matrix(self, ind, ind_p1, gamma_override=None):
         """Get transfer matrix at an index of the nucleosome array.
         """
         # Initialize transfer matrix and combinations of binder_states
@@ -101,40 +155,39 @@ class NucleosomeArray:
         for row, sigma_i in enumerate(self.sigma_i1):
             for col, sigma_ip1 in enumerate(self.sigma_i1):
                 E = 0
-                # Binding energies
-                for i, binder in enumerate(sigma_i):
-                    E += self.B[i, i] * np.min([binder, self.marks[ind][i]])
-                    # Chemical potential
-                    E -= self.mu[i] * binder
+                # Binding energies (averaged over adjacent sites)
+                E += (self.get_binding_energy(ind, sigma_i) +
+                      self.get_binding_energy(ind_p1, sigma_ip1)) / 2
                 # Neighbor interactions
-                for i, binder_1 in enumerate(sigma_i):
-                    for j, binder_2 in enumerate(sigma_ip1):
-                        E += self.J[i, j] * binder_1 * binder_2 * gamma_
-                # Same-site interactions between alike binders
-                for i, binder in enumerate(sigma_i):
-                    E += self.J[i, i] * comb(binder, 2)
-                # Same-site interactions between different binders
-                for i, binder_1 in enumerate(sigma_i[:-1]):
-                    for j, binder_2 in enumerate(sigma_i[i+1:]):
-                        E += self.J[i, j+i+1] * binder_1 * binder_2
+                E += self.get_neighbor_interactions(sigma_i, sigma_ip1, gamma_)
                 # Transfer matrix involves exponential of energy
                 T[row, col] = np.exp(-E)
-                # Scale for degeneracy
-                degeneracy = 1
-                for i, binder in enumerate(sigma_i):
-                    degeneracy *= comb(2, binder)
-                for i, binder in enumerate(sigma_ip1):
-                    degeneracy *= comb(2, binder)
-                if degeneracy > 1:
-                    T[row, col] *= np.log(degeneracy)
+                # Multiply by the degeneracy of the state
+                T[row, col] *= self.get_degeneracy(sigma_i, sigma_ip1)
         return T
+
+    def get_degeneracy(self, sigma_i, sigma_ip1):
+        """Get the degeneracy of the binding state.
+        """
+        # Initialize degeneracy
+        degeneracy = 1
+        # Calculate the degeneracy for each of the neighboring sites
+        for i, binder in enumerate(sigma_i):
+            degeneracy *= comb(self.Nbi[i], binder)
+        for i, binder in enumerate(sigma_ip1):
+            degeneracy *= comb(self.Nbi[i], binder)
+        return degeneracy
     
     def get_all_transfer_matrices(self):
         """Get transfer matrices for all adjacent beads.
         """
         self.T_all = np.zeros((self.Nr, self.Nr, self.n_beads))
         for ind in range(len(self.marks)):
-            self.T_all[:, :, ind] = self.get_transfer_matrix(ind)
+            if ind == len(self.marks) - 1:
+                ind_p1 = 0
+            else:
+                ind_p1 = ind + 1
+            self.T_all[:, :, ind] = self.get_transfer_matrix(ind, ind_p1)
 
 
 def gen_meth(n_n, f_m, l_m=0):
