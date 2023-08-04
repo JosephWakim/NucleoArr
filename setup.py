@@ -21,7 +21,8 @@ INSTALL_REQUIRES = [
     'pandas~=1.3.5',
     'matplotlib~=3.5.2',
     'notebook~=6.0.0',
-    'jupyter~=1.0.0'
+    'jupyter~=1.0.0',
+    'scipy~=1.11.1'
 ]
 
 # Read the long description from README.md
