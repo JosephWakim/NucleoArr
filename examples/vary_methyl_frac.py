@@ -1,7 +1,7 @@
 """Run nucleosome simulations varying mark correlation length.
 
-Usage: python vary_corr_length.py CORR_LENGTH
-where CORR_LENGTH is the correlation length of methylation marks.
+Usage: python vary_methyl_frac.py METHYL_FRACTION
+where METHYL_FRACTION is the fraction of histone tails with a methylation mark.
 
 By:         Joseph Wakim
 Group:      Spakowitz Lab
@@ -34,8 +34,8 @@ mu = np.array([-9.5])
 
 # Generate a methylation sequence
 n_beads = 500
-frac_methyl = 0.1
-methyl_corr_length = float(sys.argv[1])
+frac_methyl = float(sys.argv[1])
+methyl_corr_length = 18.4
 marks = nuc.gen_meth(n_beads, frac_methyl, methyl_corr_length)
 marks = np.atleast_2d(marks).T
 
@@ -54,7 +54,7 @@ nuc_arr = nuc.NucleosomeArray(
 )
 
 # Specify simulation parameters
-out_dir = "output_var_corr_length"
+out_dir = "output_var_methyl_frac"
 n_steps = 10000
 n_save = 100
 
