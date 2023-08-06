@@ -23,8 +23,6 @@ def compute_matrix_product(T_all: np.ndarray):
     mat_prod = T_all[:, :, 0].copy()
     for i in range(1, T_all.shape[2]):
         mat_prod = np.matmul(mat_prod, T_all[:, :, i])
-        alphas.append(np.mean(mat_prod))
-        mat_prod /= alphas[-1]
         norm_factor = np.average(mat_prod)
         alphas.append(norm_factor)
         mat_prod /= norm_factor
