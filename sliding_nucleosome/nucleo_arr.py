@@ -31,7 +31,7 @@ class NucleosomeArray:
         # Define unchanging physical parameters
         self.z = np.exp(-lam * a)
         self.p = 1 - np.exp(-lam)
-        self.l_array = np.arange(1, a, dtype=int)
+        self.l_array = np.arange(1, a+1, dtype=int)
         p_lt = np.exp(-lam * self.l_array)
         self.p_lt = p_lt / np.sum(p_lt)
 
