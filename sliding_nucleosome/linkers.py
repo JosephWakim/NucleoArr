@@ -94,7 +94,7 @@ def get_P_gt(nuc_arr: nuc.NucleosomeArray, dF: float) -> float:
 def sample_new_linker_length(nuc_arr, new_gamma) -> float:
     """Sample a new linker length for the given linker index.
     """
-    if new_gamma == 1:
+    if new_gamma == 0:
         return nuc_arr.a + np.random.geometric(nuc_arr.p)
     else:
         return np.random.choice(nuc_arr.l_array, p=nuc_arr.p_lt)
