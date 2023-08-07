@@ -41,8 +41,8 @@ setup(
     url=URL,
     keywords=KEYWORDS,
     classifiers=CLASSIFIERS,
-    packages=find_packages(include=["sliding_nucleosome"]),
+    packages=find_packages(include=["sliding_nucleosome", "binding_model"]),
     include_package_data=True,
-    include_dirs=[np.get_include(), "sliding_nucleosome"],
+    include_dirs=[np.get_include(), "sliding_nucleosome", "binding_model"],
     install_requires=INSTALL_REQUIRES,
 )
