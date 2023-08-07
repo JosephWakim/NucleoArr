@@ -47,7 +47,7 @@ def linker_move(nuc_arr: nuc.NucleosomeArray, ind: int):
     gamma is selected for the linker, both the T_all_1 and the `T_all` states
     will be updated to reflect the new gamma value.
     """
-    if ind == nuc_arr.n_beads- 1:
+    if ind == nuc_arr.n_beads - 1:
         ind_p1 = 0
     else:
         ind_p1 = ind + 1
@@ -62,7 +62,7 @@ def linker_move(nuc_arr: nuc.NucleosomeArray, ind: int):
     # Calculate the probability of gamma being one
     P_gt = get_P_gt(nuc_arr, dF)
     # Sample a new gamma value
-    new_gamma = np.random.choice([0, 1], p=[1-P_gt, P_gt])
+    new_gamma = np.random.choice([1, 0], p=[1-P_gt, P_gt])
     if new_gamma == 1:
         nuc_arr.T_all[:, :, ind] = nuc_arr.T_all_1[:, :, ind]
     else:
@@ -94,7 +94,7 @@ def get_P_gt(nuc_arr: nuc.NucleosomeArray, dF: float) -> float:
 def sample_new_linker_length(nuc_arr, new_gamma) -> float:
     """Sample a new linker length for the given linker index.
     """
-    if new_gamma == 1:
+    if new_gamma == 0:
         return nuc_arr.a + np.random.geometric(nuc_arr.p)
     else:
         return np.random.choice(nuc_arr.l_array, p=nuc_arr.p_lt)
