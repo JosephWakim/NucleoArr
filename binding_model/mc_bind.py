@@ -333,5 +333,4 @@ def E_bead_N_state_1D(
                 sigma[bead, binder_1] * sigma[bead_right, binder_2] * \
                 nuc_arr.J[binder_1, binder_2] * nuc_arr.gamma[bead]
 
-    print(E_bind, E_local_int, E_neigh_int)
     return E_bind + E_local_int + E_neigh_int
