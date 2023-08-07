@@ -79,7 +79,7 @@ def mc_N_state_1D(
     n_steps_per_snap: int,
     out_dir: Optional[str] = "output",
     out_prefix: Optional[str] = "bind_snap_"
-):
+) -> np.ndarray:
     """Simulate `Nr` mark and binder states on a 1D lattice.
 
     Notes
@@ -104,6 +104,12 @@ def mc_N_state_1D(
         Prefix of each snapshot filename in the output directory, to be
         followed by the snapshot number and the file extension (default =
         "snap_")
+
+    Returns
+    -------
+    np.ndarray (N, Nm) of int
+        Binding state for each of Nm binders on each of N beads after the
+        simulation
     """
     # Make the output directory
     if not os.path.exists(out_dir):
@@ -146,6 +152,9 @@ def mc_N_state_1D(
         )
         if (snap+1) % 50 == 0:
             print(f"Snapshot {snap+1} of {n_snaps} complete.")
+
+    # Return the final binding states
+    return sigma
 
 
 def binding_move_N_state_1D(
