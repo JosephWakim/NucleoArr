@@ -94,3 +94,82 @@ def compute_theoretical_binding_fraction(
     # Calculate theoretical binding fraction
     theta_theory = 1 / (nuc_arr.Nbi[0] * N * Z) * np.trace(dZ)
     return theta_theory
+
+
+def find_mu(
+    nuc_arr: nuc.NucleosomeArray,
+    lower_input: float,
+    upper_input: float,
+    setpoint: float,
+    binder_ind: Optional[int] = 0,
+    iter_: Optional[int] = 0,
+    max_iters: Optional[int] = 100,
+    rtol: Optional[float] = 0.05
+):
+    """Find chemical potential that produces desired binding fraction.
+
+    Notes
+    -----
+    This function uses a binary search to find the chemical potential that
+    produces the desired binding fraction. The function assumes that the
+    binding fraction is a monotonically increasing function of the chemical
+    potential. The function will be updated in the future to work with
+    multiple binders.
+
+    Parameters
+    ----------
+    nuc_arr : nuc.NucleosomeArray
+        Nucleosome array for which the theoretical binding fraction is to be
+        computed
+    lower_input : float
+        Lower bound of the chemical potential search
+    upper_input : float
+        Upper bound of the chemical potential search
+    setpoint : float
+        Desired binding fraction
+    binder_ind : Optional[int]
+        Index of the binder for which binding fraction is to be calculated
+        (default = 0)
+    iter_ : Optional[int]
+        Iteration number (default = 0)
+    max_iters : Optional[int]
+        Maximum number of iterations (default = 100)
+    rtol : Optional[float]
+        Relative tolerance (default = 0.05)
+
+    Returns
+    -------
+    float
+        Chemical potential that produces the desired binding fraction
+    """
+    # Update iteration
+    iter_ += 1
+    if (iter_ % 10) == 0:
+        print(f"Iteration: {iter_}")
+    # Update the chemical potential and calculate the binding fraction
+    test_mu = (lower_input + upper_input) / 2
+    nuc_arr.mu[binder_ind] = test_mu
+    nuc_arr.get_all_transfer_matrices()
+    bind_frac_ = compute_theoretical_binding_fraction(nuc_arr)
+    # Base Cases
+    if iter_ >= max_iters:
+        print("Maximum number of iterations have been met.")
+        return test_mu
+    elif np.abs((bind_frac_ - setpoint)) / setpoint <= rtol:
+        print("Converged!")
+        return test_mu
+    # Recursive Cases
+    else:
+        # If binding fraction was too high, reiterate on lower half of mu
+        if bind_frac_ > setpoint:
+            next_mu = find_mu(
+                nuc_arr, lower_input, test_mu, setpoint,
+                iter_, max_iters, rtol
+            )
+        # If binding fraction was too low, reiterate on upper half of mu
+        else:
+            next_mu = find_mu(
+                nuc_arr, test_mu, upper_input, setpoint,
+                iter_, max_iters, rtol
+            )
+        return next_mu
