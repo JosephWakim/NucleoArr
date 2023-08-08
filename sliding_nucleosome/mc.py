@@ -92,6 +92,7 @@ def mc_linkers(
 
 def find_mu_for_avg_gamma(
     nuc_arr: nuc.NucleosomeArray,
+    linker_corr_length: float,
     mu_lower: float,
     mu_upper: float,
     setpoint: float,
@@ -108,6 +109,9 @@ def find_mu_for_avg_gamma(
     ----------
     nuc_arr : nuc.NucleosomeArray
         Nucleosome array for which new linker lengths are to be sampled
+    linker_corr_length : float
+        Correlation length of the linker length distribution (which is an
+        exponentially decaying function of the linker length)
     mu_lower : float
         Lower bound on the chemical potential
     mu_upper : float
@@ -136,10 +140,21 @@ def find_mu_for_avg_gamma(
     iter_ += 1
     print(f"Iteration {iter_} of {max_iters}")
 
+    # Randomize linker lengths
+    linker_lengths = np.random.exponential(
+        linker_corr_length, size=nuc_arr.marks.shape[0]
+    )
+    linker_lengths = np.maximum(linker_lengths, 1.0)
+    linker_lengths = linker_lengths.astype(int)
+    nuc_arr.linker_lengths = linker_lengths
+    nuc_arr.gamma = (linker_lengths <= nuc_arr.a).astype(int)
+
     # Update the chemical potential and transfer functions
     test_mu = (mu_lower + mu_upper) / 2
     nuc_arr.mu[binder_ind] = test_mu
     nuc_arr.get_all_transfer_matrices()
+
+    # Resample linker lengths
     nuc_arr = mc_linkers(nuc_arr, n_snap, n_steps_per_snap)
     gamma_iter = nuc_arr.gamma[binder_ind]
     avg_gamma = np.average(gamma_iter)
