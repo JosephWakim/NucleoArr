@@ -164,6 +164,7 @@ def bind_slide(
 
     # Update the linker length distribution
     nuc_arr.mu[binder_ind] = mu_iter
+    nuc_arr.get_all_transfer_matrices()
     nuc_arr = mc_linkers(nuc_arr, n_snap, n_steps_per_snap)
     gamma_iter = nuc_arr.gamma[binder_ind]
     avg_gamma = np.average(gamma_iter)
