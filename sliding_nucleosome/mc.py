@@ -252,6 +252,7 @@ def find_nuc_arr_for_avg_binding(
     gamma_iter = nuc_arr.gamma[binder_ind]
     avg_gamma = np.average(gamma_iter)
 
+    print(f"Mu: {mu_iter}, Avg. Gamma: {avg_gamma}")
     # Base Cases
     if iter_ >= max_iters:
         print(f"Maximum number of iterations reached.")
@@ -268,7 +269,6 @@ def find_nuc_arr_for_avg_binding(
 
     # Recursive Case
     else:
-        print(f"Mu: {mu_iter}, Avg. Gamma: {avg_gamma}")
         print("Reiterating...\n")
         # Reiterate with the updated linker length distribution
         return find_nuc_arr_for_avg_binding(
