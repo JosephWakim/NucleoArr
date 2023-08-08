@@ -156,7 +156,7 @@ def find_mu_for_avg_gamma(
 
     # Resample linker lengths
     nuc_arr = mc_linkers(nuc_arr, n_snap, n_steps_per_snap)
-    gamma_iter = nuc_arr.gamma[binder_ind]
+    gamma_iter = nuc_arr.gamma
     avg_gamma = np.average(gamma_iter)
     print(f"Mu: {test_mu}, Avg. Gamma: {avg_gamma}")
 
