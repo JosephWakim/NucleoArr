@@ -172,13 +172,13 @@ def find_mu_for_avg_gamma(
         # If the average gamma is too high, decrease the chemical potential
         if avg_gamma > setpoint:
             next_mu = find_mu_for_avg_gamma(
-                nuc_arr, mu_lower, test_mu, setpoint, n_snap,
-                n_steps_per_snap, binder_ind, iter_, max_iters, rtol
+                nuc_arr, linker_corr_length, mu_lower, test_mu, setpoint,
+                n_snap, n_steps_per_snap, binder_ind, iter_, max_iters, rtol
             )
         # If the average gamma is too low, increase the chemical potential
         else:
             next_mu = find_mu_for_avg_gamma(
-                nuc_arr, test_mu, mu_upper, setpoint, n_snap,
-                n_steps_per_snap, binder_ind, iter_, max_iters, rtol
+                nuc_arr, linker_corr_length, test_mu, mu_upper, setpoint,
+                n_snap, n_steps_per_snap, binder_ind, iter_, max_iters, rtol
             )
         return next_mu
