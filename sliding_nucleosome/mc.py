@@ -155,12 +155,13 @@ def bind_slide(
     """
     # Update iteration
     iter_ += 1
-    print(f"Starting iteration {iter_} of {max_iters}.")
+    print(f"Starting iteration {iter_} of {max_iters}...")
 
     # Update the chemical potential
     mu_iter = find_mu(
         nuc_arr, mu_lower, mu_upper, theta_target, binder_ind, rtol=rtol_bind
     )
+    print("Running linker simulation...")
 
     # Update the linker length distribution
     nuc_arr.mu[binder_ind] = mu_iter
@@ -185,6 +186,7 @@ def bind_slide(
 
     # Recursive Case
     else:
+        print("Reiterating...")
         # Reiterate with the updated linker length distribution
         return bind_slide(
             nuc_arr, mu_lower, mu_upper, theta_target, n_snap,
