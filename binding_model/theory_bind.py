@@ -156,7 +156,7 @@ def find_mu(
         print("Maximum number of iterations have been met.")
         return test_mu
     elif np.abs((bind_frac_ - setpoint)) / setpoint <= rtol:
-        print("Converged!")
+        print("Binding Converged!")
         return test_mu
     # Recursive Cases
     else:
