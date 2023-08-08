@@ -165,6 +165,7 @@ def find_mu_for_avg_gamma(
         print("Maximum number of iterations have been met.")
         return test_mu
     elif np.abs((avg_gamma - setpoint) / setpoint) < rtol:
+        print("Converged!")
         return test_mu
 
     # Recursive Case
