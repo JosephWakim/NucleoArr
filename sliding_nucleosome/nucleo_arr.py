@@ -51,7 +51,6 @@ class NucleosomeArray:
 
         # Initialize all transfer matrices
         self.get_all_transfer_matrices()
-        self.T_all_1 = self.T_all.copy()
 
     def save(self, file_path):
         """Save nucleosome array to file.
@@ -174,6 +173,7 @@ class NucleosomeArray:
             else:
                 ind_p1 = ind + 1
             self.T_all[:, :, ind] = self.get_transfer_matrix(ind, ind_p1)
+        self.T_all_1 = self.T_all.copy()
 
 
 def gen_meth(n_n, f_m, l_m=0):
