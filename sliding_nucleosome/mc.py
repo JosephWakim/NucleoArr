@@ -10,7 +10,7 @@ from typing import Optional
 import numpy as np
 import sliding_nucleosome.nucleo_arr as nuc
 import sliding_nucleosome.linkers as link
-from binding_model.theory_bind import find_mu
+from binding_model.theory_bind import find_mu_for_binding_frac
 
 
 def get_unique_simulation_name(all_out_dir: str, sim_prefix: str) -> str:
@@ -90,7 +90,86 @@ def mc_linkers(
     return nuc_arr
 
 
-def bind_slide(
+def find_mu_for_avg_gamma(
+    nuc_arr: nuc.NucleosomeArray,
+    mu_lower: float,
+    mu_upper: float,
+    setpoint: float,
+    n_snap: int,
+    n_steps_per_snap: int,
+    binder_ind: Optional[int] = 0,
+    iter_: Optional[int] = 0,
+    max_iters: Optional[int] = 10,
+    rtol: Optional[float] = 0.01
+) -> float:
+    """Find the chemical potential that yields a desired average gamma.
+
+    Parameters
+    ----------
+    nuc_arr : nuc.NucleosomeArray
+        Nucleosome array for which new linker lengths are to be sampled
+    mu_lower : float
+        Lower bound on the chemical potential
+    mu_upper : float
+        Upper bound on the chemical potential
+    setpoint : float
+        Desired average gamma
+    n_snap : int
+        Number of snapshots to save during the simulation
+    n_steps_per_snap : int
+        Number of Monte Carlo moves to attempt between savepoints
+    binder_ind : Optional[int]
+        Index of the binder to be moved (default = 0)
+    iter_ : Optional[int]
+        Iteration number (default = 0)
+    max_iters : Optional[int]
+        Maximum number of iterations (default = 10)
+    rtol : Optional[float]
+        Relative tolerance for the average gamma (default = 0.01)
+
+    Returns
+    -------
+    float
+        Chemical potential that yields the desired average gamma
+    """
+    # Update iteration
+    iter_ += 1
+    if (iter_ % 2) == 0:
+        print(f"Starting iteration {iter_} of {max_iters}...")
+
+    # Update the chemical potential and transfer functions
+    test_mu = (mu_lower + mu_upper) / 2
+    nuc_arr.mu[binder_ind] = test_mu
+    nuc_arr.get_all_transfer_matrices()
+    nuc_arr = mc_linkers(nuc_arr, n_snap, n_steps_per_snap)
+    gamma_iter = nuc_arr.gamma[binder_ind]
+    avg_gamma = np.average(gamma_iter)
+
+    # Base Case
+    if iter_ >= max_iters:
+        print("Maximum number of iterations have been met.")
+        return test_mu
+    elif np.abs((avg_gamma - setpoint) / setpoint) < rtol:
+        return test_mu
+
+    # Recursive Case
+    else:
+        # If the average gamma is too high, decrease the chemical potential
+        if avg_gamma > setpoint:
+            next_mu = find_mu_for_avg_gamma(
+                nuc_arr, mu_lower, test_mu, setpoint, n_snap,
+                n_steps_per_snap, binder_ind, iter_, max_iters, rtol
+            )
+        # If the average gamma is too low, increase the chemical potential
+        else:
+            next_mu = find_mu_for_avg_gamma(
+                nuc_arr, test_mu, mu_upper, setpoint, n_snap,
+                n_steps_per_snap, binder_ind, iter_, max_iters, rtol
+            )
+        return next_mu
+
+
+def find_nuc_arr_for_avg_binding(
     nuc_arr: nuc.NucleosomeArray, mu_lower: float, mu_upper: float,
     theta_target: float, n_snap: int, n_steps_per_snap: int,
     binder_ind: Optional[int] = 0, iter_: Optional[int] = 0,
@@ -111,6 +190,9 @@ def bind_slide(
     converge.
 
     The function will be updated in the future to work with multiple binders.
+
+    It is very hard to achieve convergence with this function for
+    physiologically-relevant conditions.
 
     Parameters
     ----------
@@ -158,7 +240,7 @@ def bind_slide(
     print(f"Starting bind/slide iteration {iter_} of {max_iters}...")
 
     # Update the chemical potential
-    mu_iter = find_mu(
+    mu_iter = find_mu_for_binding_frac(
         nuc_arr, mu_lower, mu_upper, theta_target, binder_ind, rtol=rtol_bind
     )
     print("Running linker simulation...")
@@ -189,7 +271,7 @@ def bind_slide(
         print(f"Mu: {mu_iter}, Avg. Gamma: {avg_gamma}")
         print("Reiterating...\n")
         # Reiterate with the updated linker length distribution
-        return bind_slide(
+        return find_nuc_arr_for_avg_binding(
             nuc_arr, mu_lower, mu_upper, theta_target, n_snap,
             n_steps_per_snap, binder_ind, iter_, max_iters, rtol_bind,
             rtol_mu, mu_iter, rtol_gamma, avg_gamma

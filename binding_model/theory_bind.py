@@ -80,13 +80,15 @@ def compute_theoretical_binding_fraction(
         if i == 0:
             T_left[i] = np.identity(Nr)
         else:
-            T_left[i] = np.matmul(T_left[i-1], nuc_arr.T_all[:, :, i-1]) / alphas[i-1]
+            T_left[i] = \
+                np.matmul(T_left[i-1], nuc_arr.T_all[:, :, i-1]) / alphas[i-1]
     for ind in range(N):
         i = N - ind - 1
         if i == N-1:
             T_right[i] = np.identity(Nr)
         else:
-            T_right[i] = np.matmul(nuc_arr.T_all[:, :, i+1], T_right[i+1]) / alphas[i]
+            T_right[i] = \
+                np.matmul(nuc_arr.T_all[:, :, i+1], T_right[i+1]) / alphas[i]
     # Compute derivative
     dZ = np.zeros((Nr, Nr))
     for i in range(N):
@@ -96,7 +98,7 @@ def compute_theoretical_binding_fraction(
     return theta_theory
 
 
-def find_mu(
+def find_mu_for_binding_frac(
     nuc_arr: nuc.NucleosomeArray,
     lower_input: float,
     upper_input: float,
@@ -146,11 +148,13 @@ def find_mu(
     iter_ += 1
     if (iter_ % 10) == 0:
         print(f"Binding model iteration: {iter_}")
+
     # Update the chemical potential and calculate the binding fraction
     test_mu = (lower_input + upper_input) / 2
     nuc_arr.mu[binder_ind] = test_mu
     nuc_arr.get_all_transfer_matrices()
     bind_frac_ = compute_theoretical_binding_fraction(nuc_arr)
+
     # Base Cases
     if iter_ >= max_iters:
         print("Maximum number of iterations have been met.")
@@ -158,17 +162,18 @@ def find_mu(
     elif np.abs((bind_frac_ - setpoint)) / setpoint <= rtol:
         print("Binding Converged!")
         return test_mu
+
     # Recursive Cases
     else:
         # If binding fraction was too high, reiterate on lower half of mu
         if bind_frac_ > setpoint:
-            next_mu = find_mu(
+            next_mu = find_mu_for_binding_frac(
                 nuc_arr, lower_input, test_mu, setpoint, binder_ind,
                 iter_, max_iters, rtol
             )
         # If binding fraction was too low, reiterate on upper half of mu
         else:
-            next_mu = find_mu(
+            next_mu = find_mu_for_binding_frac(
                 nuc_arr, test_mu, upper_input, setpoint, binder_ind,
                 iter_, max_iters, rtol
             )
