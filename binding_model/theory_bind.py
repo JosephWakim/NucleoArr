@@ -163,13 +163,13 @@ def find_mu(
         # If binding fraction was too high, reiterate on lower half of mu
         if bind_frac_ > setpoint:
             next_mu = find_mu(
-                nuc_arr, lower_input, test_mu, setpoint,
+                nuc_arr, lower_input, test_mu, setpoint, binder_ind,
                 iter_, max_iters, rtol
             )
         # If binding fraction was too low, reiterate on upper half of mu
         else:
             next_mu = find_mu(
-                nuc_arr, test_mu, upper_input, setpoint,
+                nuc_arr, test_mu, upper_input, setpoint, binder_ind,
                 iter_, max_iters, rtol
             )
         return next_mu
