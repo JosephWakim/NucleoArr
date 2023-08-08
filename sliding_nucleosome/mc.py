@@ -99,7 +99,7 @@ def find_mu_for_avg_gamma(
     n_steps_per_snap: int,
     binder_ind: Optional[int] = 0,
     iter_: Optional[int] = 0,
-    max_iters: Optional[int] = 10,
+    max_iters: Optional[int] = 100,
     rtol: Optional[float] = 0.01
 ) -> float:
     """Find the chemical potential that yields a desired average gamma.
@@ -134,8 +134,7 @@ def find_mu_for_avg_gamma(
     """
     # Update iteration
     iter_ += 1
-    if (iter_ % 2) == 0:
-        print(f"Starting iteration {iter_} of {max_iters}...")
+    print(f"Iteration {iter_} of {max_iters}")
 
     # Update the chemical potential and transfer functions
     test_mu = (mu_lower + mu_upper) / 2
@@ -144,6 +143,7 @@ def find_mu_for_avg_gamma(
     nuc_arr = mc_linkers(nuc_arr, n_snap, n_steps_per_snap)
     gamma_iter = nuc_arr.gamma[binder_ind]
     avg_gamma = np.average(gamma_iter)
+    print(f"Mu: {test_mu}, Avg. Gamma: {avg_gamma}")
 
     # Base Case
     if iter_ >= max_iters:
