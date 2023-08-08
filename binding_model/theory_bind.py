@@ -145,7 +145,7 @@ def find_mu(
     # Update iteration
     iter_ += 1
     if (iter_ % 10) == 0:
-        print(f"Iteration: {iter_}")
+        print(f"Binding model iteration: {iter_}")
     # Update the chemical potential and calculate the binding fraction
     test_mu = (lower_input + upper_input) / 2
     nuc_arr.mu[binder_ind] = test_mu

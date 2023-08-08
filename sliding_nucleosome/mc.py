@@ -155,7 +155,7 @@ def bind_slide(
     """
     # Update iteration
     iter_ += 1
-    print(f"Starting iteration {iter_} of {max_iters}...")
+    print(f"Starting bind/slide iteration {iter_} of {max_iters}...")
 
     # Update the chemical potential
     mu_iter = find_mu(
