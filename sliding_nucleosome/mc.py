@@ -175,7 +175,7 @@ def bind_slide(
         print(f"Maximum number of iterations reached.")
         return nuc_arr
     change_in_range_frac = (
-        (avg_gamma - prev_avg_gamma) / prev_avg_gamma
+        (avg_gamma - prev_avg_gamma) / (prev_avg_gamma + 1e-5)
     )
     change_mu = (mu_iter - prev_mu) / prev_mu
     converged = (np.abs(change_in_range_frac) < rtol_gamma) and \
@@ -186,7 +186,8 @@ def bind_slide(
 
     # Recursive Case
     else:
-        print("Reiterating...")
+        print(f"Mu: {mu_iter}, Avg. Gamma: {avg_gamma}")
+        print("Reiterating...\n")
         # Reiterate with the updated linker length distribution
         return bind_slide(
             nuc_arr, mu_lower, mu_upper, theta_target, n_snap,
