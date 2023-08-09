@@ -22,7 +22,8 @@ INSTALL_REQUIRES = [
     'matplotlib~=3.5.2',
     'notebook~=6.0.0',
     'jupyter~=1.0.0',
-    'scipy~=1.11.1'
+    'scipy~=1.11.1',
+    'wlcstat @ git+https://github.com/JosephWakim/wlcstat.git'
 ]
 
 # Read the long description from README.md
