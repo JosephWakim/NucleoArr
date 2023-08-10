@@ -86,6 +86,10 @@ class NucleosomeArray:
         nucleosome_array_dict["linker_lengths"] = np.array(
             nucleosome_array_dict["linker_lengths"]
         )
+        # Format Nbi as a numpy array
+        nucleosome_array_dict["Nbi"] = np.array(
+            nucleosome_array_dict["Nbi"]
+        )
 
         # Initialize NucleosomeArray object
         return cls(**nucleosome_array_dict)
