@@ -5,9 +5,11 @@ Group:      Spakowitz Lab
 Date:       31 July 2023
 """
 
+from typing import Optional
 from scipy.special import comb
 import json
 import numpy as np
+from wlcstat.chromo import gen_chromo_conf
 
 
 class NucleosomeArray:
@@ -232,3 +234,162 @@ def gen_meth(n_n, f_m, l_m=0):
             else:
                 n_m[i_n] = 0
     return n_m
+
+
+def render_nuc_arr(
+    nuc_arr: NucleosomeArray, ind0: int, indf: int,
+    mark_ind: Optional[int] = 0, save_path: Optional[str] = "r_poly.pdb"
+):
+    """Generate a PDB file representing a segment of the nucleosome array
+
+    Parameters
+    ----------
+    nuc_arr : NucleosomeArray
+        Nucleosome array object
+    ind0 : int
+        Index of the first nucleosome in the segment to be rendered
+    indf : int
+        One past the index of the last nucleosome in the segment to be rendered
+    mark_ind : Optional[int]
+        Index of the mark used to color-code beads in the PDB file (default = 0)
+    save_path : Optional[str]
+        Path to save the PDB file (default = "r_poly.pdb")
+    """
+    r, rdna1, rdna2, rn, un = gen_chromo_conf(
+        nuc_arr.linker_lengths[ind0:indf]
+    )
+    marks_image = nuc_arr.marks[:, mark_ind].flatten()[ind0:indf]
+    gen_chromo_pymol_file(
+        r, rdna1, rdna2, rn, un, marks_image, filename=save_path
+    )
+
+
+def gen_chromo_pymol_file(
+    r, rdna1, rdna2, rn, un, nm, filename='r_poly.pdb', ring=False
+):
+    """Generate a PDB file for a nucleosome array.
+
+    Notes
+    -----
+    This function was made by Dr. Andrew Spakowitz.
+    """
+    # Setup the parameters for imaging nucleosome array
+    hnuc = 2.265571482035928
+
+    # Open the file
+    f = open(filename, 'w')
+    atomname1 = "A1"    # Chain atom type
+    atomname2 = "A2"    # Chain atom type
+    atomname3 = "A3"    # Chain atom type
+    atomname4 = "A4"    # Chain atom type
+    atomname5 = "A5"    # Chain atom type
+    atomname6 = "A6"    # Chain atom type
+    resname = "SSN"     # Type of residue (UNKnown/Single Stranded Nucleotide)
+    chain = "A"         # Chain identifier
+    resnum = 1
+    numdna = len(r[:, 0])
+    numnuc = len(rn[:, 0])
+    descrip = "Pseudo atom representation of DNA"
+    chemicalname = "Body and ribbon spatial coordinates"
+
+    # Write the preamble to the pymol file
+    f.write('HET    %3s  %1s%4d   %5d     %-38s\n' % (resname, chain, resnum, numdna, descrip))
+    f.write('HETNAM     %3s %-50s\n' % (resname, chemicalname))
+    f.write('FORMUL  1   %3s    C20 N20 P21\n' % (resname))
+
+    # Write the conformation to the pymol file
+    # Define the dna centerline positions
+    count = 1
+    for ind in range(numdna):
+        f.write('ATOM%7d %4s %3s %1s        %8.3f%8.3f%8.3f%6.2f%6.2f           C\n' %
+                (count, atomname1, resname, chain, r[ind, 0], r[ind, 1], r[ind, 2], 1.00, 1.00))
+        count += 1
+
+    # Define the dna strand 1 positions
+    for ind in range(numdna):
+        f.write('ATOM%7d %4s %3s %1s        %8.3f%8.3f%8.3f%6.2f%6.2f           C\n' %
+                (count, atomname2, resname, chain, rdna1[ind, 0], rdna1[ind, 1], rdna1[ind, 2], 1.00, 1.00))
+        count += 1
+
+    # Define the dna strand 2 positions
+    for ind in range(numdna):
+        f.write('ATOM%7d %4s %3s %1s        %8.3f%8.3f%8.3f%6.2f%6.2f           C\n' %
+                (count, atomname3, resname, chain, rdna2[ind, 0], rdna2[ind, 1], rdna2[ind, 2], 1.00, 1.00))
+        count += 1
+
+    # Define the nucleosome positions
+    for ind in range(numnuc):
+        rnucind = rn[ind, :] + 0.5 * hnuc *un[ind, :]
+        if ind == (numnuc - 1):
+            atomnamen = atomname4
+        elif nm[ind] == 0:
+            atomnamen = atomname4
+        elif nm[ind] == 1:
+            atomnamen = atomname5
+        elif nm[ind] == 2:
+            atomnamen = atomname6
+        f.write('ATOM%7d %4s %3s %1s        %8.3f%8.3f%8.3f%6.2f%6.2f           C\n' %
+                (count, atomnamen, resname, chain, rnucind[0], rnucind[1], rnucind[2], 1.00, 1.00))
+        count += 1
+        rnucind = rn[ind, :] - 0.5 * hnuc *un[ind, :]
+        f.write('ATOM%7d %4s %3s %1s        %8.3f%8.3f%8.3f%6.2f%6.2f           C\n' %
+                (count, atomnamen, resname, chain, rnucind[0], rnucind[1], rnucind[2], 1.00, 1.00))
+        count += 1
+
+    # Define the connectivity in the chain
+    # Connectivity for the center beads
+    count = 1
+    if ring:
+        f.write('CONECT%5d%5d%5d\n' % (count, count + 1, count - 1 + numdna))
+    else:
+        f.write('CONECT%5d%5d\n' % (count, count + 1))
+    count += 1
+    for ind in range(2, numdna):
+        f.write('CONECT%5d%5d%5d\n' % (count , count - 1, count + 1))
+        count += 1
+    if ring:
+        f.write('CONECT%5d%5d%5d\n' % (count, count - 1, 1 + count - numdna))
+    else:
+        f.write('CONECT%5d%5d\n' % (count, count - 1))
+    count += 1
+
+    # Connectivity for the dna chain 1 beads
+    if ring:
+        f.write('CONECT%5d%5d%5d\n' % (count, count + 1, count - 1 + numdna))
+    else:
+        f.write('CONECT%5d%5d\n' % (count, count + 1))
+    count += 1
+    for ind in range(2, numdna):
+        f.write('CONECT%5d%5d%5d\n' % (count , count - 1, count + 1))
+        count += 1
+    if ring:
+        f.write('CONECT%5d%5d%5d\n' % (count, count - 1, 1 + count - numdna))
+    else:
+        f.write('CONECT%5d%5d\n' % (count, count - 1))
+    count += 1
+
+    # Connectivity for the dna chain 2 beads
+    if ring:
+        f.write('CONECT%5d%5d%5d\n' % (count, count + 1, count - 1 + numdna))
+    else:
+        f.write('CONECT%5d%5d\n' % (count, count + 1))
+    count += 1
+    for ind in range(2, numdna):
+        f.write('CONECT%5d%5d%5d\n' % (count , count - 1, count + 1))
+        count += 1
+    if ring:
+        f.write('CONECT%5d%5d%5d\n' % (count, count - 1, 1 + count - numdna))
+    else:
+        f.write('CONECT%5d%5d\n' % (count, count - 1))
+    count += 1
+
+    # Connectivity for the nucleosome positions
+    for ind in range(numnuc):
+        f.write('CONECT%5d%5d\n' % (count, count + 1))
+        count += 1
+        f.write('CONECT%5d%5d\n' % (count, count - 1))
+        count += 1
+
+    # Close the file
+    f.write('END')
+    f.close()
