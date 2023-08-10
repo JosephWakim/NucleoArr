@@ -82,6 +82,10 @@ class NucleosomeArray:
         nucleosome_array_dict["marks"] = np.array(
             nucleosome_array_dict["marks"]
         )
+        # Format linker lengths as a numpy array
+        nucleosome_array_dict["linker_lengths"] = np.array(
+            nucleosome_array_dict["linker_lengths"]
+        )
 
         # Initialize NucleosomeArray object
         return cls(**nucleosome_array_dict)
