@@ -272,6 +272,25 @@ def gen_chromo_pymol_file(
     Notes
     -----
     This function was made by Dr. Andrew Spakowitz.
+
+    Parameters
+    ----------
+    r : np.ndarray
+        Array of positions representing nucleosomes and linker DNA
+    rdna1 : np.ndarray
+        Array of positions representing first strand of DNA
+    rdna2 : np.ndarray
+        Array of positions representing second strand of DNA
+    rn : np.ndarray
+        Array of positions representing nucleosomes
+    un : np.ndarray
+        TODO: Check with Andy for description
+    nm : np.ndarray
+        Array of mark identities
+    filename : Optional[str]
+        Path to the PDB file to be generated (default = 'r_poly.pdb')
+    ring : Optional[bool]
+        Whether to generate a ring-shaped nucleosome array (default = False)
     """
     # Setup the parameters for imaging nucleosome array
     hnuc = 2.265571482035928
