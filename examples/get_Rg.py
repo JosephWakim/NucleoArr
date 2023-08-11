@@ -45,7 +45,10 @@ def radius_of_gyration(coordinates):
 out_path = sys.argv[1]
 
 # Identify the latest snapshot
-snapshots = [f for f in os.listdir(out_path) if f.startswith('snap') and f.endswith('.json')]
+snapshots = [
+    f for f in os.listdir(out_path)
+    if f.startswith('snap') and f.endswith('.json')
+]
 snapshots = [f for f in snapshots if f != 'snap_init.json']
 
 # Load the latest snapshot
@@ -89,7 +92,7 @@ cluster_inds = {cluster: set_bead_map[cluster] for cluster in clusters}
 
 # Specify the output file for Rg data
 save_name = "Rg_dist.csv"
-save_path = os.path.join(out_dir, save_name)
+save_path = os.path.join(out_path, save_name)
 
 ## Generate a representative distribution for radius of gyration
 n_realizations = 1000
