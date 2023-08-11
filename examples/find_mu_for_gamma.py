@@ -32,8 +32,6 @@ from sliding_nucleosome import mc
 # Initialize physical parameters
 J = np.atleast_2d([-3.92])
 B = np.atleast_2d([-1.5])
-mu_min = float(sys.argv[3])
-mu_max = float(sys.argv[4])
 
 # Generate a methylation sequence
 n_beads = int(sys.argv[2])
@@ -54,18 +52,18 @@ linker_lengths = np.maximum(linker_lengths, 1.0)
 linker_lengths = linker_lengths.astype(int)
 
 # Initialize the nucleosome array
+mu_lower = float(sys.argv[3])
+mu_upper = float(sys.argv[4])
+avg_mu = np.average([mu_lower, mu_upper])
 nuc_arr = nuc.NucleosomeArray(
-    J=J, B=B, mu=mu, linker_lengths=linker_lengths, a=a, lam=lam,
+    J=J, B=B, mu=[avg_mu], linker_lengths=linker_lengths, a=a, lam=lam,
     marks=marks, Nbi=nbi
 )
 
 # Specify parameters for linker simulation
 n_snap = 20
 n_steps_per_snap = 1000
-
 target_avg_gamma = float(sys.argv[1])
-mu_lower = -10.
-mu_upper = -8.
 rtol = 0.05
 
 mu = mc.find_mu_for_avg_gamma(
