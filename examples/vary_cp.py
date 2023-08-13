@@ -54,7 +54,7 @@ nuc_arr = nuc.NucleosomeArray(
 )
 
 # Specify simulation parameters
-out_dir = "output_var_chain_length"
+out_dir = "output_var_cp"
 n_steps = 10000
 n_save = 100
 
