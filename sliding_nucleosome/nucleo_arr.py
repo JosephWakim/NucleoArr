@@ -83,15 +83,15 @@ class NucleosomeArray:
         # Format the mark pattern as a numpy array
         nucleosome_array_dict["marks"] = np.array(
             nucleosome_array_dict["marks"]
-        )
+        ).astype(int)
         # Format linker lengths as a numpy array
         nucleosome_array_dict["linker_lengths"] = np.array(
             nucleosome_array_dict["linker_lengths"]
-        )
+        ).astype(int)
         # Format Nbi as a numpy array
         nucleosome_array_dict["Nbi"] = np.array(
             nucleosome_array_dict["Nbi"]
-        )
+        ).astype(int)
 
         # Initialize NucleosomeArray object
         return cls(**nucleosome_array_dict)

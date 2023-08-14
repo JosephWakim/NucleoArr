@@ -99,7 +99,7 @@ n_realizations = 1000
 Rg_all = []
 for i in range(n_realizations):
     # Generate a configuration for the nucleosome array
-    _, _, _, r_nucleo, _ = gen_chromo_conf(nuc_arr.linker_lengths)
+    _, _, _, r_nucleo, _ = gen_chromo_conf(nuc_arr.linker_lengths.astype(int))
     # Identify coordinates for each cluster
     cluster_r = {
         cluster: r_nucleo[inds, :] for cluster, inds in cluster_inds.items()
