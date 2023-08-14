@@ -1,7 +1,8 @@
 """Run nucleosome simulations varying mark correlation length.
 
-Usage: python vary_methyl_frac.py METHYL_FRACTION
-where METHYL_FRACTION is the fraction of histone tails with a methylation mark.
+Usage: python vary_methyl_frac.py METHYL_FRACTION MU
+where METHYL_FRACTION is the fraction of histone tails with a methylation mark
+and MU is the chemical potential of the system.
 
 By:         Joseph Wakim
 Group:      Spakowitz Lab
@@ -30,10 +31,10 @@ from sliding_nucleosome import mc
 # Initialize physical parameters
 J = np.atleast_2d([-3.92])
 B = np.atleast_2d([-1.5])
-mu = np.array([-9.5])
+mu = np.array([float(sys.argv[2])])
 
 # Generate a methylation sequence
-n_beads = 500
+n_beads = 1000
 frac_methyl = float(sys.argv[1])
 methyl_corr_length = 18.4
 marks = nuc.gen_meth(n_beads, frac_methyl, methyl_corr_length)
